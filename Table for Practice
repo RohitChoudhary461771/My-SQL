@@ -1,3 +1,6 @@
+_________________________________________________________________________________________________________________________________________________________________________
+👉 Creating table
+
 create table department(
 	dept_id int primary key,
     dept_name varchar(25)
@@ -23,3 +26,178 @@ insert into employee values(2,'Bob',25,50000.00,2,'2018-07-10');
 insert into employee values(3,'Charlie',35,80000.00,1,'2012-11-03');
 insert into employee values(4,'David',28,60000.00,3,'2019-01-22');
 insert into employee values(5,'Eve',40,90000.00,2,'2010-05-13');
+
+________________________________________________________________________________________________________________________________________________________________________
+🌟Learning Join
+
+	-- InnerJoin:- It takes only the common value in both the table.
+	select * from department d inner join employee e on d.dept_id=e.dept_id;
+    
+	-- Left Join:- It take all left table values and from right table it take only that value which are present in left also. 
+        select * from department d left join employee e on d.dept_id=e.dept_id;
+	
+        -- Right Join:- It take all right table values and from left table it take only that value which are present in rigt also. 
+        select * from department d right join employee e on d.dept_id=e.dept_id;
+    
+        -- cross Join:- It take cartesian product from both table. 
+        select * from department d cross join employee e ;
+
+
+_________________________________________________________________________________________________________________________________________________________________________
+👉 MySQL Questions for practice.
+
+-- Q.1 Find the average salary of employee in each department: 
+		select d.dept_name,avg(e.emp_salary) as avg_salary 
+		from 
+		department d inner join employee e on d.dept_id=e.dept_id
+		group by d.dept_name;
+
+-- Q.2 Retrieve the details of employees whose salary is above the average salary
+	
+          select * from employee e 
+          where 
+	  e.emp_salary >(SELECT AVG(emp_salary) FROM employee);
+    
+-- Q3 Retrieve the employee details along with their department name.
+
+	select * from  department d inner join employee e on d.dept_id=e.dept_id;
+
+-- Q.4 Find the highest paid employee in each department
+	
+	select e.emp_id ,e.emp_name, e.emp_age, e.emp_salary,e.dept_id,e.hire_date,d.dept_id,d.dept_name
+	from 
+        employee e inner join department d on e.dept_id=d.dept_id
+        where 
+	e.emp_salary =(
+		select max(e2.emp_salary)
+        from employee e2
+        where e2.dept_id=e.dept_id
+        );
+
+
+-- Q.5. Retrieve the total salary expense for each department:
+	select d.dept_id,d.dept_name,
+        sum(e.emp_salary) as total_salay_expense
+	from
+		employee e inner join department d on e.dept_id=d.dept_id
+	group by
+		d.dept_id,d.dept_name
+	order by d.dept_id;
+        
+-- Q.6 Find the department that have more than 2 employees:
+
+	select d.dept_id,d.dept_name,count(e.emp_id) as num_employees
+        from 
+		department d
+	left join 
+		employee e on e.dept_id =d.dept_id
+	group by
+		d.dept_id,d.dept_name
+	Having count(e.emp_id)>1;
+
+-- 07 Find the names of employees who work in the 'HR' or 'Marketing' departments:
+
+    select e.emp_name
+    from department d inner join employee e 
+    on d.dept_id=e.dept_id
+    where d.dept_name ='Marketing' or d.dept_name='HR';
+    
+-- Q.8 Retrieve the details of employees who are least paid in their department.
+
+	select 
+		e.emp_id,
+		e.emp_name,
+		e.emp_age,
+		e.emp_salary,
+		e.dept_id,
+		e.hire_date
+	from  employee e join(
+		select  dept_id,min(emp_salary)as min_salary
+        from employee
+        group by dept_id
+    )as m on e.dept_id =m.dept_id and e.emp_salary =m.min_salary;
+
+
+-- Q.9 Find the second highest salary in the company.
+
+    
+        SELECT emp_salary,emp_name
+	FROM employee
+	ORDER BY emp_salary desc
+    limit 1,1;                       -- https://static.javatpoint.com/mysql/images/mysql-limit.png
+--  limit offset,count;  <offset - tells from where we have to start picking the row it start from 0 not 1,> <count - tells the number of row to display starting from offset value>
+
+
+
+-- Q.10 Find the total number of employess who have a salary between 50,000 and 80,000 
+
+    select count(emp_id)as emp_no from
+    employee where emp_salary between 50000 and 80000;
+    
+-- Q.11 retrieve the names of employees who have 'e' as the last character in their name:
+
+	select emp_name from employee where emp_name like '%e';
+
+-- % any number of character from 0 to n.
+-- '_' only one character.
+
+-- Q.12 find the duplicate name of employee 
+
+    select emp_name,count(emp_name) as count
+    from employee
+    group by emp_name
+    having count(emp_name)>1;
+    
+-- Q.13 Find the names of employees whose names contain exactly five character.
+
+	select emp_name from employee where length(emp_name)=5;
+-- OR
+	select emp_name from employee where emp_name like '_____';
+    
+-- Q.14 Retrieve the details of employees who dont belong to departments with 'Marketing' or'it' in their names:
+  -- using joins	  
+		select * from employee e left join department d
+		on d.dept_id=e.emp_id
+		where d.dept_name not in('Marketing','it')OR d.dept_name IS NULL;
+   
+   -- without joins
+		select * from employee e where emp_id not in(
+			select dept_id from department where dept_name  in('Marketing','it'));
+            
+-- Q.15 Find the names of employees whose salaries are between 45000 and 75000 and who are in the 'HR' department.
+
+	select emp_name from employee 
+	where emp_salary between 45000 and 75000 and  emp_id=(
+    select dept_id from department
+    where dept_name ='HR');
+ 
+-- using joins
+	select e.emp_name from employee e left join department d
+    on e.dept_id=d.dept_id
+    where e.emp_salary between (45000 and 75000 )and d.dept_name='HR';
+    
+-- Q.16 Retrieve the top 3 highest-paid employees:
+	
+    select emp_name,emp_salary from employee
+	order by emp_salary desc
+    limit 3;
+    
+-- Q.17 Add a new coloumn manager_id to the employee table
+	
+    alter table employee add  manager_id int; 
+    
+    select * from employee;
+
+-- Q.18 Drop the manager_id coloumn in the employee table .
+	alter table employee drop manager_id ;
+
+-- Q.19 modify the emp_salary column in the employee table to set a default value of 50000.
+	alter table employee alter column emp_salary set default  50000;
+
+-- Q.20 Create an index on the hire_date column in the employee table:
+	create index index_id on employee(hire_date);-- https://www.w3schools.com/mysql/mysql_create_index.asp
+    
+-- Q.21 Add a unique constraint on the emp_name column in the employee table:
+	Alter table employee ADD constraint uc_emp_name unique(emp_name);
+
+____________________________________________________________________________________________________________________________________________________________________
